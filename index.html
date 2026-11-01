@@ -268,6 +268,10 @@
         <div style="display:flex; gap:8px;">
           <input type="text" id="expNote" required>
         </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; color:var(--ink-soft); margin-bottom:6px;" id="splitAmongLabel">किसके बीच बाँटें:</div>
+          <div id="splitAmongChecks" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
         <button class="btn" type="submit" id="addExpenseBtn" style="margin-top:10px; width:100%;"></button>
       </form>
     </div>
@@ -379,13 +383,30 @@
   </div>
 </div>
 
-<div id="offlineScreen" style="display:none; position:fixed; inset:0; z-index:997; background:var(--bg); align-items:center; justify-content:center; text-align:center; padding:30px;">
-  <div>
-    <div style="font-size:52px; margin-bottom:14px;">📡</div>
-    <div style="font-weight:700; font-size:19px; margin-bottom:6px;">No internet connection</div>
-    <div style="font-size:13px; color:var(--ink-soft); margin-bottom:18px;">कृपया अपना internet चालू करें</div>
-    <button class="btn" id="offlineRetryBtn">🔄 Retry</button>
-  </div>
+<div id="offlineScreen" style="display:none; position:fixed; inset:0; z-index:997; background:#0B0F1E; align-items:center; justify-content:center; text-align:center; padding:30px; flex-direction:column;">
+  <svg width="150" height="150" viewBox="0 0 150 150" style="margin-bottom:20px;">
+    <circle cx="24" cy="30" r="10" fill="#2A3352"/>
+    <ellipse cx="24" cy="30" rx="17" ry="4" fill="none" stroke="#4A5A8A" stroke-width="1.5" transform="rotate(-20 24 30)"/>
+    <circle cx="128" cy="100" r="13" fill="#232A45"/>
+    <g stroke="#F23D6E" stroke-width="2" stroke-linecap="round">
+      <path d="M110 45 l0 10 M105 50 l10 0"/>
+      <path d="M35 95 l0 8 M31 99 l8 0"/>
+      <path d="M120 135 l0 7 M116.5 138.5 l7 0"/>
+    </g>
+    <g transform="translate(75 78) rotate(42)">
+      <path d="M0 -38 C 13 -22, 13 10, 0 30 C -13 10, -13 -22, 0 -38 Z" fill="#8890A8"/>
+      <path d="M0 -38 C 13 -22, 13 10, 0 30 C -6 10, -6 -22, 0 -38 Z" fill="#AEB6CC"/>
+      <circle cx="0" cy="-8" r="8" fill="#5B6488"/>
+      <circle cx="0" cy="-8" r="5" fill="#7C89B8"/>
+      <path d="M-3 22 C -18 26, -22 42, -18 54 C -10 46, -6 34, -3 22 Z" fill="#6B4A9E"/>
+      <path d="M3 22 C 18 26, 22 42, 18 54 C 10 46, 6 34, 3 22 Z" fill="#6B4A9E"/>
+      <path d="M-6 28 L0 55 L6 28 Z" fill="#F2A73B"/>
+      <path d="M-3 28 L0 46 L3 28 Z" fill="#FCE083"/>
+    </g>
+  </svg>
+  <div style="font-weight:700; font-size:20px; color:#F2F4FA; margin-bottom:8px;">No internet connection</div>
+  <div style="font-size:13px; color:#8A93B8; margin-bottom:22px; max-width:260px;">कृपया अपना Wi-Fi या mobile data चालू करें</div>
+  <button id="offlineRetryBtn" style="background:#F23D6E; color:#fff; border:none; padding:11px 28px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">🔄 Retry</button>
 </div>
 
 <div id="adminPasswordModal" style="display:none; position:fixed; inset:0; z-index:998; background:rgba(46,36,26,0.55); align-items:center; justify-content:center; padding:24px;">
@@ -759,6 +780,18 @@ function renderMembers(){
   sel.innerHTML = data.members.length
     ? data.members.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('')
     : `<option value="">${t.selectMemberPlaceholder}</option>`;
+
+  const splitWrap = document.getElementById('splitAmongChecks');
+  if(splitWrap){
+    const prevChecked = {};
+    splitWrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{ prevChecked[cb.value] = cb.checked; });
+    splitWrap.innerHTML = data.members.map(m => {
+      const checked = (prevChecked[m] === undefined) ? true : prevChecked[m];
+      return `<label style="display:flex; align-items:center; gap:4px; font-size:13px; background:var(--bg); border:1px solid var(--line); padding:4px 9px; border-radius:999px;">
+        <input type="checkbox" value="${escapeHtml(m)}" ${checked?'checked':''} style="margin:0;"> ${escapeHtml(m)}
+      </label>`;
+    }).join('');
+  }
 }
 document.getElementById('memberForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -820,6 +853,7 @@ function renderExpenses(){
       <div>
         <div class="expense-who">${escapeHtml(ex.member)}</div>
         <div class="expense-what">${escapeHtml(ex.note)} · ${dateStr}</div>
+        ${(Array.isArray(ex.splitAmong) && ex.splitAmong.length && ex.splitAmong.length !== data.members.length) ? `<div style="font-size:11px; color:var(--ink-soft);">Split: ${ex.splitAmong.map(escapeHtml).join(', ')}</div>` : ''}
       </div>
       <div>
         <div class="expense-amt">₹${ex.amount}</div>
@@ -839,7 +873,6 @@ document.getElementById('expenseList').addEventListener('click', async e=>{
   e.stopPropagation();
   const expenseId = String(btn.dataset.expenseId || '');
   if(!expenseId || busy) return;
-  if(!confirm('Delete this expense?')) return;
   const ex = data.expenses.find(x => String(x.id) === expenseId);
   if(!ex) return;
   btn.disabled = true;
@@ -856,9 +889,11 @@ document.getElementById('expenseForm').addEventListener('submit', async e=>{
   const amount = Number(document.getElementById('expAmount').value);
   const note = document.getElementById('expNote').value.trim();
   if(!member || !amount || !note) return;
+  let splitAmong = [...document.querySelectorAll('#splitAmongChecks input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!splitAmong.length) splitAmong = [...data.members];
   document.getElementById('expAmount').value='';
   document.getElementById('expNote').value='';
-  await withLatest(d => { d.expenses.push({id: uid(), member, amount, note, ts: Date.now()}); }, `Added expense: ₹${amount} (${note}) - ${member}`);
+  await withLatest(d => { d.expenses.push({id: uid(), member, amount, note, ts: Date.now(), splitAmong}); }, `Added expense: ₹${amount} (${note}) - ${member}`);
 });
 
 // ---------- BALANCES / SETTLEMENT ----------
@@ -873,16 +908,22 @@ function renderBalances(){
   }
   const monthExpenses = data.expenses.filter(ex=>{const d=new Date(ex.ts);return d.getFullYear()===selectedYear&&d.getMonth()===selectedMonth;});
   const rentMonthTotal = data.rent.filter(r=>Number(r.year)===selectedYear&&Number(r.month)===selectedMonth).reduce((s,r)=>s+rentTotal(r),0);
-  const total = monthExpenses.reduce((s,ex)=>s+Number(ex.amount),0) + rentMonthTotal;
-  const fairShare = total / data.members.length;
+  const rentSharePerMember = rentMonthTotal / data.members.length;
 
-  const spent = {};
-  data.members.forEach(m=> spent[m]=0);
-  monthExpenses.forEach(ex=>{ if(spent[ex.member] !== undefined) spent[ex.member]+=Number(ex.amount); });
-  // Rent is a shared obligation: it is divided equally among all members,
-  // and is not credited to any single member as if they paid it.
+  const spent = {};    // what each member personally paid out
+  const owedShare = {}; // what each member owes as their fair share
+  data.members.forEach(m=>{ spent[m]=0; owedShare[m]=rentSharePerMember; });
+  // Rent is a shared obligation split equally among all members, regardless of who paid it.
+  // Each expense, though, is split only among the members selected for it (splitAmong) —
+  // so a member who was away and excluded from an expense owes nothing toward it.
+  monthExpenses.forEach(ex=>{
+    if(spent[ex.member] !== undefined) spent[ex.member]+=Number(ex.amount);
+    const participants = (Array.isArray(ex.splitAmong) && ex.splitAmong.length) ? ex.splitAmong : data.members;
+    const share = Number(ex.amount) / participants.length;
+    participants.forEach(p=>{ if(owedShare[p] !== undefined) owedShare[p]+=share; });
+  });
 
-  const balances = data.members.map(m => ({ name:m, balance: Math.round((spent[m]-fairShare)*100)/100 }));
+  const balances = data.members.map(m => ({ name:m, balance: Math.round((spent[m]-owedShare[m])*100)/100 }));
 
   balWrap.innerHTML = balances.map(b => `
     <div class="balance-row">
@@ -1002,33 +1043,7 @@ function renderMainData(){
 }
 const oldRenderAll=renderAll; renderAll=function(){oldRenderAll();renderRent();renderMainData();renderAllMonthsHistory();};
 fillDateSelects();
-document.getElementById('rentForm').addEventListener('submit',e=>{
-  e.preventDefault();
-
-  // Capture form values before the async Firebase operation starts.
-  // Previously reset() could run first, causing the saved rent/electricity amounts to become 0.
-  const y = Number(document.getElementById('rentYear').value);
-  const m = Number(document.getElementById('rentMonth').value);
-  const roomRentAmount = Number(document.getElementById('roomRent').value || 0);
-  const electricBillAmount = Number(document.getElementById('electricBill').value || 0);
-  const extra = [...document.querySelectorAll('.extra-charge')].map(row=>({
-    name: row.querySelector('.extra-name').value.trim(),
-    amount: Number(row.querySelector('.extra-amount').value || 0)
-  })).filter(x=>x.name && x.amount);
-
-  withLatest(d=>d.rent.push({
-    id: uid(),
-    year: y,
-    month: m,
-    roomRent: roomRentAmount,
-    electricBill: electricBillAmount,
-    extra
-  }), `Added rent: ${monthNames[m]} ${y} — ₹${rentTotal({roomRent:roomRentAmount,electricBill:electricBillAmount,extra})}`);
-
-  e.target.reset();
-  document.getElementById('extraCharges').innerHTML = '';
-  fillDateSelects();
-});
+document.getElementById('rentForm').addEventListener('submit',e=>{e.preventDefault();const extra=[...document.querySelectorAll('.extra-charge')].map(row=>({name:row.querySelector('.extra-name').value.trim(),amount:Number(row.querySelector('.extra-amount').value||0)})).filter(x=>x.name&&x.amount);const y=Number(rentYear.value),m=Number(rentMonth.value);withLatest(d=>d.rent.push({id:uid(),year:y,month:m,roomRent:Number(roomRent.value||0),electricBill:Number(electricBill.value||0),extra}), `Added rent: ${monthNames[m]} ${y}`);e.target.reset();fillDateSelects();});
 document.getElementById('addExtraBtn').addEventListener('click',()=>{const row=document.createElement('div');row.className='extra-charge';row.style='display:flex;gap:8px;margin-bottom:8px;';row.innerHTML='<input class="extra-name" placeholder="Charge name" required><input class="extra-amount" type="number" min="0" placeholder="Amount ₹" required>';document.getElementById('extraCharges').appendChild(row);});
 document.getElementById('rentList').addEventListener('click',e=>{const b=e.target.closest('[data-rent-id]');if(b){const r=data.rent.find(x=>x.id===b.dataset.rentId);const label=r?`Deleted rent: ${monthNames[r.month]} ${r.year}`:'Deleted rent';withLatest(d=>{d.rent=d.rent.filter(x=>x.id!==b.dataset.rentId);}, label);}});
 ['mainYear','mainMonth'].forEach(id=>document.getElementById(id).addEventListener('change',renderMainData));
