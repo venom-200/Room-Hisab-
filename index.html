@@ -462,6 +462,7 @@ const STR = {
     balanceTitle:'कौन कितना दे / ले', balanceEmpty:'हिसाब के लिए कम से कम 2 मेंबर जोड़ें',
     willGet:'लेना है', willGive:'देना है',
     settleTitle:'सेटलमेंट सुझाव', settleAllClear:'सबका हिसाब बराबर है 🎉',
+    splitAmongLabel:'किसके बीच बाँटें:',
     resetBtn:'⚠️ डेटा रीसेट करें', resetConfirm:'क्या आप वाकई सारा डेटा (राशन, खर्चा, मेंबर्स) डिलीट करना चाहते हैं?',
     resetMonthBtn:'सिर्फ ये महीना डिलीट करें', resetYearBtn:'पूरा साल डिलीट करें', resetCancel:'रद्द करें',
     resetMonthConfirm:'इस महीने का सारा खर्चा और किराया डिलीट हो जाएगा। पक्का करें?',
@@ -485,6 +486,7 @@ const STR = {
     balanceTitle:'Who owes / gets', balanceEmpty:'Add at least 2 members to see balances',
     willGet:'to receive', willGive:'to pay',
     settleTitle:'Settle-up suggestions', settleAllClear:'Everyone is settled up 🎉',
+    splitAmongLabel:'Split among:',
     resetBtn:'⚠️ Reset data', resetConfirm:'Are you sure you want to delete all data (ration, expenses, members)?',
     resetMonthBtn:'Delete this month only', resetYearBtn:'Delete entire year', resetCancel:'Cancel',
     resetMonthConfirm:'All expenses and rent for this month will be deleted. Are you sure?',
@@ -508,6 +510,7 @@ const STR = {
     balanceTitle:'କିଏ କେତେ ଦେବ / ପାଇବ', balanceEmpty:'ହିସାବ ପାଇଁ ଅତିକମରେ ୨ ଜଣ ସଦସ୍ୟ ଯୋଡ଼ନ୍ତୁ',
     willGet:'ପାଇବେ', willGive:'ଦେବେ',
     settleTitle:'ସେଟଲମେଣ୍ଟ ପରାମର୍ଶ', settleAllClear:'ସମସ୍ତଙ୍କ ହିସାବ ସମାନ ଅଛି 🎉',
+    splitAmongLabel:'କାହା ମଧ୍ୟରେ ବାଣ୍ଟିବେ:',
     resetBtn:'⚠️ ତଥ୍ୟ ରିସେଟ୍ କରନ୍ତୁ', resetConfirm:'ଆପଣ ପ୍ରକୃତରେ ସମସ୍ତ ତଥ୍ୟ (ରାସନ, ଖର୍ଚ୍ଚ, ସଦସ୍ୟ) ଡିଲିଟ୍ କରିବାକୁ ଚାହାଁନ୍ତି କି?',
     resetMonthBtn:'ଶୁଧୁ ଏହି ମାସ ଡିଲିଟ୍ କରନ୍ତୁ', resetYearBtn:'ପୂରା ବର୍ଷ ଡିଲିଟ୍ କରନ୍ତୁ', resetCancel:'ବାତିଲ୍ କରନ୍ତୁ',
     resetMonthConfirm:'ଏହି ମାସର ସମସ୍ତ ଖର୍ଚ୍ଚ ଓ ଭଡ଼ା ଡିଲିଟ୍ ହୋଇଯିବ। ନିଶ୍ଚିତ କି?',
@@ -701,6 +704,7 @@ function applyLanguage(){
   document.getElementById('balanceTitle').textContent = t.balanceTitle;
   document.getElementById('settleTitle').textContent = t.settleTitle;
   document.getElementById('resetBtn').textContent = t.resetBtn;
+  document.getElementById('splitAmongLabel').textContent = t.splitAmongLabel;
   document.getElementById('resetMonthBtn').textContent = t.resetMonthBtn;
   document.getElementById('resetYearBtn').textContent = t.resetYearBtn;
   document.getElementById('resetCancelBtn').textContent = t.resetCancel;
@@ -835,6 +839,15 @@ function bindMonthFilters(){
   ['expenseYear','settleYear'].forEach(id=>document.getElementById(id)?.addEventListener('change',e=>{selectedYear=Number(e.target.value); syncFilterValues(); renderExpenses(); renderBalances();}));
   ['expenseMonth','settleMonth'].forEach(id=>document.getElementById(id)?.addEventListener('change',e=>{selectedMonth=Number(e.target.value); syncFilterValues(); renderExpenses(); renderBalances();}));
 }
+function expenseTimestampForSelectedMonth(){
+  // New expenses belong to the month/year currently selected in the filter,
+  // not always to today's real date.
+  const now = new Date();
+  if(selectedYear === now.getFullYear() && selectedMonth === now.getMonth()) return now.getTime();
+  const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  const day = Math.min(now.getDate(), lastDay);
+  return new Date(selectedYear, selectedMonth, day, now.getHours(), now.getMinutes(), now.getSeconds()).getTime();
+}
 function syncFilterValues(){['expenseYear','settleYear'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=String(selectedYear)});['expenseMonth','settleMonth'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=String(selectedMonth)});}
 
 // ---------- EXPENSES ----------
@@ -893,7 +906,8 @@ document.getElementById('expenseForm').addEventListener('submit', async e=>{
   if(!splitAmong.length) splitAmong = [...data.members];
   document.getElementById('expAmount').value='';
   document.getElementById('expNote').value='';
-  await withLatest(d => { d.expenses.push({id: uid(), member, amount, note, ts: Date.now(), splitAmong}); }, `Added expense: ₹${amount} (${note}) - ${member}`);
+  const expTs = expenseTimestampForSelectedMonth();
+  await withLatest(d => { d.expenses.push({id: uid(), member, amount, note, ts: expTs, splitAmong}); }, `Added expense: ₹${amount} (${note}) - ${member}`);
 });
 
 // ---------- BALANCES / SETTLEMENT ----------
