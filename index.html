@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room Hisab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF3E2;
+    --surface:#FFFDF6;
+    --ink:#2E241A;
+    --ink-soft:#6B5D4C;
+    --turmeric:#D98E04;
+    --turmeric-dark:#B8760A;
+    --spice:#A63A2D;
+    --green:#4F7942;
+    --line:#E8DCC4;
+    --shadow: 0 2px 10px rgba(46,36,26,0.08);
+    --font-head:'Baloo 2','Noto Sans Oriya','Noto Sans Devanagari',sans-serif;
+    --font-body:'Noto Sans','Noto Sans Oriya','Noto Sans Devanagari',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg) url('kitchen-bg.jpg') center/cover fixed no-repeat;
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:84px;
+    position:relative;
+  }
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background:rgba(250,243,226,0.55);
+    z-index:0;
+  }
+  html{ overscroll-behavior-y:contain; }
+  body{ overscroll-behavior-y:contain; }
+  #rationCard{
+    position:relative;
+    background-size:cover;
+    background-position:center;
+    transition:background-image 0.6s ease-in-out;
+    overflow:hidden;
+  }
+  #rationCard::before{
+    content:'';
+    position:absolute; inset:0;
+    background:rgba(255,253,246,0.80);
+    z-index:0;
+    border-radius:14px;
+  }
+  #rationCard > *{ position:relative; z-index:1; }
+  #membersCard{
+    position:relative;
+    background-image:url('members-bg.jpg');
+    background-size:cover;
+    background-position:center;
+    overflow:hidden;
+  }
+  #membersCard::before{
+    content:'';
+    position:absolute; inset:0;
+    background:rgba(255,253,246,0.80);
+    z-index:0;
+    border-radius:14px;
+  }
+  #membersCard > *{ position:relative; z-index:1; }
+  header, main, nav.tabbar{ position:relative; z-index:1; }
+  h1,h2,h3,.brand{font-family:var(--font-head);}
+  header{
+    padding:18px 18px 14px;
+    background:var(--surface);
+    border-bottom:2px solid var(--line);
+    position:sticky; top:0; z-index:5;
+  }
+  .header-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  header .brand{
+    font-size:22px; font-weight:700; color:var(--spice);
+    display:flex; align-items:center; gap:8px;
+  }
+  header .sub{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .sync-status{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+  .lang-switch{
+    display:flex; gap:4px; background:var(--bg); border:1.5px solid var(--line);
+    border-radius:999px; padding:3px; flex-shrink:0;
+  }
+  .lang-switch button{
+    border:none; background:none; font-size:12px; font-weight:700;
+    padding:5px 9px; border-radius:999px; cursor:pointer; color:var(--ink-soft);
+    font-family:var(--font-body);
+  }
+  .lang-switch button.active{background:var(--turmeric); color:#fff;}
+  main{padding:16px; max-width:520px; margin:0 auto;}
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .section-title{
+    font-size:19px; font-weight:600; margin:4px 2px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px; border-radius:999px; font-size:13px; font-weight:600;
+    border:none; cursor:pointer; font-family:var(--font-body);
+  }
+  .pill.khatam{background:#F6DAD6; color:var(--spice);}
+  .pill.available{background:#DCEBD4; color:var(--green);}
+  .item-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+    gap:10px;
+  }
+  .item-row:last-child{border-bottom:none;}
+  .item-name{font-weight:600; font-size:15px; flex:1;}
+  .del-btn{
+    background:#F6DAD6; border:none; color:var(--spice); font-size:16px; font-weight:700;
+    cursor:pointer; padding:6px 11px; line-height:1; border-radius:8px; min-width:34px; min-height:34px;
+  }
+  .empty{
+    text-align:center; color:var(--ink-soft); padding:24px 10px; font-size:14px;
+  }
+  form.inline{display:flex; gap:8px; margin-top:4px;}
+  input, select{
+    font-family:var(--font-body);
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+    color:var(--ink);
+    width:100%;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--turmeric);}
+  .btn{
+    background:var(--turmeric);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:10px 16px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    white-space:nowrap;
+    font-family:var(--font-body);
+  }
+  .btn:disabled{opacity:0.6;}
+  .btn:active{background:var(--turmeric-dark);}
+  .expense-row{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:10px 4px; border-bottom:1px solid var(--line); gap:10px;
+  }
+  .expense-row:last-child{border-bottom:none;}
+  .expense-who{font-weight:600; font-size:14px;}
+  .expense-what{font-size:13px; color:var(--ink-soft); margin-top:1px;}
+  .expense-amt{font-weight:700; color:var(--spice); font-size:15px; white-space:nowrap;}
+  .total-banner{
+    background:linear-gradient(135deg, var(--turmeric), var(--turmeric-dark));
+    color:#fff; border-radius:14px; padding:16px; margin-bottom:14px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .total-banner .label{font-size:13px; opacity:0.9;}
+  .total-banner .val{font-size:24px; font-weight:700; font-family:var(--font-head);}
+  .member-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#F1E7CF; border-radius:999px; padding:6px 12px 6px 14px;
+    font-size:13px; font-weight:600; margin:4px 6px 4px 0;
+  }
+  .member-chip button{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:15px;
+  }
+  .balance-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+  }
+  .balance-row:last-child{border-bottom:none;}
+  .bal-name{font-weight:600; font-size:14px;}
+  .bal-amt.pos{color:var(--green); font-weight:700;}
+  .bal-amt.neg{color:var(--spice); font-weight:700;}
+  .settle-line{
+    font-size:13.5px; padding:8px 4px; border-bottom:1px solid var(--line);
+  }
+  .settle-line:last-child{border-bottom:none;}
+  nav.tabbar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--surface); border-top:2px solid var(--line);
+    display:flex; z-index:10;
+  }
+  nav.tabbar button{
+    flex:1; background:none; border:none; padding:12px 4px 10px;
+    font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--ink-soft);
+    display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
+  }
+  nav.tabbar button .ic{font-size:19px;}
+  nav.tabbar button.active{color:var(--spice);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .muted-link{
+    background:none; border:none; color:var(--ink-soft); font-size:12.5px;
+    text-decoration:underline; cursor:pointer; padding:6px 0; font-family:var(--font-body);
+  }
+  .filters{display:flex;gap:8px;margin:0 0 10px;}
+  .filters select{flex:1;}
+  .status-msg{font-size:12.5px; color:var(--ink-soft); text-align:center; padding:8px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="brand" id="brandTapZone">🏠 <span id="brandText">Room Hisab</span></div>
+      <div class="sub" id="subText"></div>
+      <div class="sync-status" id="syncStatus"></div>
+    </div>
+    <div>
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="hi">हिं</button>
+        <button data-lang="en">EN</button>
+        <button data-lang="or">ଓଡ଼ି</button>
+      </div>
+      <button type="button" id="headerRefreshBtn" style="margin-top:6px; background:none; border:1.5px solid var(--line); color:var(--ink-soft); font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; cursor:pointer; font-family:var(--font-body); display:block; margin-left:auto;">🔄 Refresh</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- RATION TAB -->
+  <section id="tab-ration" class="tab-panel active">
+    <div class="card" id="rationCard">
+      <div class="section-title" id="rationTitle"></div>
+      <div id="rationList"></div>
+      <form class="inline" id="rationForm" style="margin-top:10px;">
+        <input type="text" id="rationInput" required>
+        <button class="btn" type="submit" id="rationAddBtn"></button>
+      </form>
+    </div>
+    <div class="status-msg" id="rationHint"></div>
+  </section>
+
+  <!-- KHARCHA TAB -->
+  <section id="tab-kharcha" class="tab-panel">
+    <div class="total-banner">
+      <div>
+        <div class="label" id="monthTotalLabel"></div>
+        <div class="val" id="monthTotal">₹0</div>
+      </div>
+      <div style="font-size:28px;">💸</div>
+    </div>
+    <div class="card">
+      <div class="section-title" id="newExpenseTitle"></div>
+      <form id="expenseForm">
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <select id="expMember" required></select>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input type="number" id="expAmount" min="1" required>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="expNote" required>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; color:var(--ink-soft); margin-bottom:6px;" id="splitAmongLabel">किसके बीच बाँटें:</div>
+          <div id="splitAmongChecks" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+        <button class="btn" type="submit" id="addExpenseBtn" style="margin-top:10px; width:100%;"></button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="section-title" id="recentExpensesTitle"></div>
+      <div class="filters"><select id="expenseYear"></select><select id="expenseMonth"></select></div>
+      <div id="expenseList"></div>
+    </div>
+  </section>
+
+  <!-- HISAB TAB -->
+  <section id="tab-hisab" class="tab-panel">
+    <div class="card" id="membersCard">
+      <div class="section-title" id="membersTitle"></div>
+      <div id="memberChips"></div>
+      <form class="inline" id="memberForm" style="margin-top:10px;">
+        <input type="text" id="memberInput" required>
+        <button class="btn" type="submit" id="memberAddBtn"></button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="section-title" id="balanceTitle"></div>
+      <div class="filters"><select id="settleYear"></select><select id="settleMonth"></select></div>
+      <div id="balanceList"></div>
+    </div>
+    <div class="card">
+      <div class="section-title" id="settleTitle"></div>
+      <div id="settleList"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">📚 All Months History</div>
+      <div id="allMonthsHistory"></div>
+    </div>
+    <div class="card">
+      <button class="muted-link" id="refreshBtn"></button> ·
+      <button class="muted-link" id="resetBtn"></button>
+      <div id="resetPanel" style="display:none; margin-top:10px;">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <select id="resetYear"></select>
+          <select id="resetMonth"></select>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" id="resetMonthBtn" style="background:var(--spice);"></button>
+          <button class="btn" id="resetYearBtn" style="background:var(--spice);"></button>
+          <button class="muted-link" id="resetCancelBtn"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- RENT TAB -->
+  <section id="tab-rent" class="tab-panel">
+    <div class="card">
+      <div class="section-title">🏠 Rent & Bills</div>
+      <form id="rentForm">
+        <div style="display:flex;gap:8px;margin-bottom:8px;"><select id="rentYear" required></select><select id="rentMonth" required></select></div>
+        <input id="roomRent" type="number" min="0" placeholder="Room rent (₹)" required style="margin-bottom:8px;">
+        <input id="electricBill" type="number" min="0" placeholder="Electricity bill (₹)" required style="margin-bottom:8px;">
+        <div id="extraCharges"></div>
+        <button type="button" class="muted-link" id="addExtraBtn">＋ Add extra charge</button>
+        <button class="btn" type="submit" style="width:100%;margin-top:8px;">Add rent record</button>
+      </form>
+    </div>
+    <div class="card"><div class="section-title">Rent records</div><div id="rentList"></div></div>
+  </section>
+
+  <!-- MAIN DATA TAB -->
+  <section id="tab-main" class="tab-panel">
+    <div class="card">
+      <div class="section-title">📚 Main Data / Master File</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;"><select id="mainYear"></select><select id="mainMonth"></select></div>
+      <div id="mainDataView"></div>
+    </div>
+  </section>
+
+  <!-- ADMIN TAB (hidden unless unlocked on this device) -->
+  <section id="tab-admin" class="tab-panel">
+    <div class="card">
+      <div class="section-title">🛡️ Admin Panel</div>
+      <div style="font-size:12.5px; color:var(--ink-soft); margin-top:-6px; margin-bottom:12px;">Manage devices and app security</div>
+      <div id="adminStats" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+        <input type="text" id="adminSearch" placeholder="Search device name or ID...">
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+        <span style="font-size:12.5px; color:var(--ink-soft);">Device limit:</span>
+        <input type="number" id="adminDeviceLimit" min="0" style="width:70px;">
+        <button class="btn" id="adminDeviceLimitSave" style="padding:6px 12px; font-size:12px;">Save</button>
+      </div>
+      <div id="adminDeviceList"></div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📋 Recent activity</span>
+        <button class="muted-link" id="adminActivityViewAllBtn" style="padding:0;">View all</button>
+      </div>
+      <div id="adminActivityLog"></div>
+    </div>
+  </section>
+
+</main>
+
+
+<div id="blockScreen" style="display:none; position:fixed; inset:0; z-index:999; background:var(--bg); align-items:center; justify-content:center; text-align:center; padding:30px;">
+  <div>
+    <div style="font-size:40px; margin-bottom:10px;">⛔</div>
+    <div style="font-weight:700; font-size:18px;">Access blocked</div>
+  </div>
+</div>
+
+<div id="offlineScreen" style="display:none; position:fixed; inset:0; z-index:997; background:#0B0F1E; align-items:center; justify-content:center; text-align:center; padding:30px; flex-direction:column;">
+  <svg width="150" height="150" viewBox="0 0 150 150" style="margin-bottom:20px;">
+    <circle cx="24" cy="30" r="10" fill="#2A3352"/>
+    <ellipse cx="24" cy="30" rx="17" ry="4" fill="none" stroke="#4A5A8A" stroke-width="1.5" transform="rotate(-20 24 30)"/>
+    <circle cx="128" cy="100" r="13" fill="#232A45"/>
+    <g stroke="#F23D6E" stroke-width="2" stroke-linecap="round">
+      <path d="M110 45 l0 10 M105 50 l10 0"/>
+      <path d="M35 95 l0 8 M31 99 l8 0"/>
+      <path d="M120 135 l0 7 M116.5 138.5 l7 0"/>
+    </g>
+    <g transform="translate(75 78) rotate(42)">
+      <path d="M0 -38 C 13 -22, 13 10, 0 30 C -13 10, -13 -22, 0 -38 Z" fill="#8890A8"/>
+      <path d="M0 -38 C 13 -22, 13 10, 0 30 C -6 10, -6 -22, 0 -38 Z" fill="#AEB6CC"/>
+      <circle cx="0" cy="-8" r="8" fill="#5B6488"/>
+      <circle cx="0" cy="-8" r="5" fill="#7C89B8"/>
+      <path d="M-3 22 C -18 26, -22 42, -18 54 C -10 46, -6 34, -3 22 Z" fill="#6B4A9E"/>
+      <path d="M3 22 C 18 26, 22 42, 18 54 C 10 46, 6 34, 3 22 Z" fill="#6B4A9E"/>
+      <path d="M-6 28 L0 55 L6 28 Z" fill="#F2A73B"/>
+      <path d="M-3 28 L0 46 L3 28 Z" fill="#FCE083"/>
+    </g>
+  </svg>
+  <div style="font-weight:700; font-size:20px; color:#F2F4FA; margin-bottom:8px;">No internet connection</div>
+  <div style="font-size:13px; color:#8A93B8; margin-bottom:22px; max-width:260px;">कृपया अपना Wi-Fi या mobile data चालू करें</div>
+  <button id="offlineRetryBtn" style="background:#F23D6E; color:#fff; border:none; padding:11px 28px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">🔄 Retry</button>
+</div>
+
+<div id="adminPasswordModal" style="display:none; position:fixed; inset:0; z-index:998; background:rgba(46,36,26,0.55); align-items:center; justify-content:center; padding:24px;">
+  <div class="card" style="width:100%; max-width:340px;">
+    <div class="section-title">🔒 Admin password</div>
+    <input type="password" id="adminPasswordInput" placeholder="Password" style="margin-bottom:10px;">
+    <div id="adminPasswordMsg" style="font-size:12.5px; color:var(--spice); min-height:16px; margin-bottom:6px;"></div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn" id="adminPasswordOkBtn" style="flex:1;">Unlock</button>
+      <button class="muted-link" id="adminPasswordCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="textModal" style="display:none; position:fixed; inset:0; z-index:998; background:rgba(46,36,26,0.55); align-items:center; justify-content:center; padding:24px;">
+  <div class="card" style="width:100%; max-width:340px;">
+    <div class="section-title" id="textModalTitle">Enter name</div>
+    <input type="text" id="textModalInput" style="margin-bottom:10px;">
+    <div style="display:flex; gap:8px;">
+      <button class="btn" id="textModalOkBtn" style="flex:1;">Save</button>
+      <button class="muted-link" id="textModalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<button class="btn" id="saveAllBtn" style="position:fixed; bottom:72px; left:16px; right:16px; width:calc(100% - 32px); z-index:9;">💾 Save / Sync</button>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="ration"><span class="ic">🧺</span><span id="navRation"></span></button>
+  <button class="tab-btn" data-tab="kharcha"><span class="ic">🧾</span><span id="navKharcha"></span></button>
+  <button class="tab-btn" data-tab="hisab"><span class="ic">🤝</span><span id="navHisab"></span></button>
+  <button class="tab-btn" data-tab="rent"><span class="ic">🏠</span><span>Rent</span></button>
+  <button class="tab-btn" data-tab="main"><span class="ic">📚</span><span>Main Data</span></button>
+  <button class="tab-btn" data-tab="admin" id="navAdminBtn" style="display:none;"><span class="ic">⚙️</span><span>Admin</span></button>
+</nav>
+
+<!-- Device Remove 1.0: Admin can remove individual device entries. -->
+<script>
+const DB_URL = 'https://room-manegement-d9cf1-default-rtdb.firebaseio.com/roomhisab.json';
+
+const STR = {
+  hi: {
+    brand:'रूम हिसाब', sub:'राशन • खर्चा • हिसाब — सबके लिए एक जगह',
+    navRation:'राशन', navKharcha:'खर्चा', navHisab:'हिसाब',
+    rationTitle:'राशन लिस्ट', rationPlaceholder:'जैसे: चावल, तेल, दाल...', addBtn:'जोड़ें',
+    rationHint:'आइटम पर टैप करके स्टेटस बदलें (खत्म / है)', rationEmpty:'अभी कोई आइटम नहीं है',
+    statusKhatam:'❌ खत्म', statusAvailable:'✅ है',
+    monthTotalLabel:'इस महीने कुल खर्चा', newExpenseTitle:'नया खर्चा जोड़ें',
+    selectMemberPlaceholder:'पहले मेंबर जोड़ें', amountPlaceholder:'राशि (₹)',
+    notePlaceholder:'किस लिए / कहाँ से (जैसे: सब्ज़ी मंडी)', addExpenseBtn:'खर्चा जोड़ें',
+    recentExpensesTitle:'हाल के खर्चे', expenseEmpty:'अभी कोई खर्चा दर्ज नहीं है',
+    membersTitle:'रूम मेंबर्स', memberEmpty:'अभी कोई मेंबर नहीं जोड़ा गया', memberPlaceholder:'नाम लिखें...',
+    balanceTitle:'कौन कितना दे / ले', balanceEmpty:'हिसाब के लिए कम से कम 2 मेंबर जोड़ें',
+    willGet:'लेना है', willGive:'देना है',
+    settleTitle:'सेटलमेंट सुझाव', settleAllClear:'सबका हिसाब बराबर है 🎉',
+    splitAmongLabel:'किसके बीच बाँटें:',
+    resetBtn:'⚠️ डेटा रीसेट करें', resetConfirm:'क्या आप वाकई सारा डेटा (राशन, खर्चा, मेंबर्स) डिलीट करना चाहते हैं?',
+    resetMonthBtn:'सिर्फ ये महीना डिलीट करें', resetYearBtn:'पूरा साल डिलीट करें', resetCancel:'रद्द करें',
+    resetMonthConfirm:'इस महीने का सारा खर्चा और किराया डिलीट हो जाएगा। पक्का करें?',
+    resetYearConfirm:'इस पूरे साल का सारा खर्चा और किराया डिलीट हो जाएगा। पक्का करें?',
+    resetPasswordPrompt:'Password डालें:', resetPasswordWrong:'गलत password!',
+    refreshBtn:'🔄 अभी sync करें',
+    syncing:'sync हो रहा है...', synced:'✅ सिंक हो गया', syncError:'⚠️ इंटरनेट जांचें, sync नहीं हुआ',
+    locale:'hi-IN'
+  },
+  en: {
+    brand:'Room Hisab', sub:'Ration • Expenses • Settlement — all in one place',
+    navRation:'Ration', navKharcha:'Expenses', navHisab:'Settle Up',
+    rationTitle:'Ration list', rationPlaceholder:'e.g. Rice, Oil, Dal...', addBtn:'Add',
+    rationHint:'Tap an item to switch its status (Out / In stock)', rationEmpty:'No items yet',
+    statusKhatam:'❌ Out', statusAvailable:'✅ In stock',
+    monthTotalLabel:'Total spent this month', newExpenseTitle:'Add new expense',
+    selectMemberPlaceholder:'Add members first', amountPlaceholder:'Amount (₹)',
+    notePlaceholder:'What for / where (e.g. vegetable market)', addExpenseBtn:'Add expense',
+    recentExpensesTitle:'Recent expenses', expenseEmpty:'No expenses recorded yet',
+    membersTitle:'Room members', memberEmpty:'No members added yet', memberPlaceholder:'Enter name...',
+    balanceTitle:'Who owes / gets', balanceEmpty:'Add at least 2 members to see balances',
+    willGet:'to receive', willGive:'to pay',
+    settleTitle:'Settle-up suggestions', settleAllClear:'Everyone is settled up 🎉',
+    splitAmongLabel:'Split among:',
+    resetBtn:'⚠️ Reset data', resetConfirm:'Are you sure you want to delete all data (ration, expenses, members)?',
+    resetMonthBtn:'Delete this month only', resetYearBtn:'Delete entire year', resetCancel:'Cancel',
+    resetMonthConfirm:'All expenses and rent for this month will be deleted. Are you sure?',
+    resetYearConfirm:'All expenses and rent for this entire year will be deleted. Are you sure?',
+    resetPasswordPrompt:'Enter password:', resetPasswordWrong:'Wrong password!',
+    refreshBtn:'🔄 Sync now',
+    syncing:'Syncing...', synced:'✅ Synced', syncError:'⚠️ Check internet, sync failed',
+    locale:'en-IN'
+  },
+  or: {
+    brand:'ରୁମ ହିସାବ', sub:'ରାସନ • ଖର୍ଚ୍ଚ • ହିସାବ — ସମସ୍ତଙ୍କ ପାଇଁ ଏକ ସ୍ଥାନ',
+    navRation:'ରାସନ', navKharcha:'ଖର୍ଚ୍ଚ', navHisab:'ହିସାବ',
+    rationTitle:'ରାସନ ତାଲିକା', rationPlaceholder:'ଯଥା: ଚାଉଳ, ତେଲ, ଡାଲି...', addBtn:'ଯୋଡ଼ନ୍ତୁ',
+    rationHint:'ଆଇଟମ୍ ଉପରେ ଟାପ୍ କରି ସ୍ଥିତି ବଦଳାନ୍ତୁ (ସରିଗଲା / ଅଛି)', rationEmpty:'ଏବେ କୌଣସି ଆଇଟମ୍ ନାହିଁ',
+    statusKhatam:'❌ ସରିଗଲା', statusAvailable:'✅ ଅଛି',
+    monthTotalLabel:'ଏହି ମାସର ମୋଟ ଖର୍ଚ୍ଚ', newExpenseTitle:'ନୂଆ ଖର୍ଚ୍ଚ ଯୋଡ଼ନ୍ତୁ',
+    selectMemberPlaceholder:'ପ୍ରଥମେ ସଦସ୍ୟ ଯୋଡ଼ନ୍ତୁ', amountPlaceholder:'ରାଶି (₹)',
+    notePlaceholder:'କେଉଁଥିପାଇଁ / କେଉଁଠାରୁ (ଯଥା: ପନିପରିବା ବଜାର)', addExpenseBtn:'ଖର୍ଚ୍ଚ ଯୋଡ଼ନ୍ତୁ',
+    recentExpensesTitle:'ସାମ୍ପ୍ରତିକ ଖର୍ଚ୍ଚ', expenseEmpty:'ଏବେ କୌଣସି ଖର୍ଚ୍ଚ ଲିପିବଦ୍ଧ ହୋଇନାହିଁ',
+    membersTitle:'ରୁମ ସଦସ୍ୟ', memberEmpty:'ଏବେ କୌଣସି ସଦସ୍ୟ ଯୋଡ଼ାଯାଇ ନାହିଁ', memberPlaceholder:'ନାମ ଲେଖନ୍ତୁ...',
+    balanceTitle:'କିଏ କେତେ ଦେବ / ପାଇବ', balanceEmpty:'ହିସାବ ପାଇଁ ଅତିକମରେ ୨ ଜଣ ସଦସ୍ୟ ଯୋଡ଼ନ୍ତୁ',
+    willGet:'ପାଇବେ', willGive:'ଦେବେ',
+    settleTitle:'ସେଟଲମେଣ୍ଟ ପରାମର୍ଶ', settleAllClear:'ସମସ୍ତଙ୍କ ହିସାବ ସମାନ ଅଛି 🎉',
+    splitAmongLabel:'କାହା ମଧ୍ୟରେ ବାଣ୍ଟିବେ:',
+    resetBtn:'⚠️ ତଥ୍ୟ ରିସେଟ୍ କରନ୍ତୁ', resetConfirm:'ଆପଣ ପ୍ରକୃତରେ ସମସ୍ତ ତଥ୍ୟ (ରାସନ, ଖର୍ଚ୍ଚ, ସଦସ୍ୟ) ଡିଲିଟ୍ କରିବାକୁ ଚାହାଁନ୍ତି କି?',
+    resetMonthBtn:'ଶୁଧୁ ଏହି ମାସ ଡିଲିଟ୍ କରନ୍ତୁ', resetYearBtn:'ପୂରା ବର୍ଷ ଡିଲିଟ୍ କରନ୍ତୁ', resetCancel:'ବାତିଲ୍ କରନ୍ତୁ',
+    resetMonthConfirm:'ଏହି ମାସର ସମସ୍ତ ଖର୍ଚ୍ଚ ଓ ଭଡ଼ା ଡିଲିଟ୍ ହୋଇଯିବ। ନିଶ୍ଚିତ କି?',
+    resetYearConfirm:'ଏହି ପୂରା ବର୍ଷର ସମସ୍ତ ଖର୍ଚ୍ଚ ଓ ଭଡ଼ା ଡିଲିଟ୍ ହୋଇଯିବ। ନିଶ୍ଚିତ କି?',
+    resetPasswordPrompt:'Password ଲେଖନ୍ତୁ:', resetPasswordWrong:'ଭୁଲ୍ password!',
+    refreshBtn:'🔄 ଏବେ sync କରନ୍ତୁ',
+    syncing:'sync ହେଉଛି...', synced:'✅ sync ହୋଇଗଲା', syncError:'⚠️ ଇଣ୍ଟରନେଟ୍ ଯାଞ୍ଚ କରନ୍ତୁ, sync ହେଲା ନାହିଁ',
+    locale:'or-IN'
+  }
+};
+
+let lang = localStorage.getItem('lang-pref') || 'hi';
+let data = { members: [], ration: [], expenses: [], rent: [], devices: {}, blockedDevices: {}, activityLog: [] };
+let busy = false;
+let selectedYear = new Date().getFullYear();
+let selectedMonth = new Date().getMonth();
+let dirty = false;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function T(){ return STR[lang]; }
+function setSyncStatus(msg){ document.getElementById('syncStatus').textContent = msg; }
+
+function getDeviceId(){
+  let id = localStorage.getItem('device-id');
+  if(!id){ id = 'dev_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem('device-id', id); }
+  return id;
+}
+
+async function fetchRemote(){
+  const res = await fetch(DB_URL, { cache:'no-store' });
+  if(!res.ok) throw new Error('fetch failed');
+  const json = await res.json();
+  const safe = json && typeof json === 'object' ? json : {};
+  return {
+    members: Array.isArray(safe.members) ? safe.members : [],
+    ration: Array.isArray(safe.ration) ? safe.ration : [],
+    expenses: Array.isArray(safe.expenses) ? safe.expenses : [],
+    rent: Array.isArray(safe.rent) ? safe.rent : [],
+    devices: safe.devices && typeof safe.devices === 'object' ? safe.devices : {},
+    blockedDevices: safe.blockedDevices && typeof safe.blockedDevices === 'object' ? safe.blockedDevices : {},
+    activityLog: Array.isArray(safe.activityLog) ? safe.activityLog : []
+  };
+}
+async function pushRemote(newData){
+  const res = await fetch(DB_URL, {
+    method:'PUT',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify(newData)
+  });
+  if(!res.ok) throw new Error('push failed');
+}
+
+
+// Fetch the newest database state before every change.
+// This prevents an old local copy (especially device-tracking data) from
+// overwriting a newer expense/delete made on another action/device.
+async function fetchRemoteWithEtag(){
+  const res = await fetch(DB_URL, { cache:'no-store', headers:{ 'X-Firebase-ETag':'true' } });
+  if(!res.ok) throw new Error('fetch failed: '+res.status);
+  const json = await res.json();
+  const safe = json && typeof json === 'object' ? json : {};
+  return {
+    etag: res.headers.get('ETag') || 'null_etag',
+    data: {
+      members: Array.isArray(safe.members) ? safe.members : [],
+      ration: Array.isArray(safe.ration) ? safe.ration : [],
+      expenses: Array.isArray(safe.expenses) ? safe.expenses : [],
+      rent: Array.isArray(safe.rent) ? safe.rent : [],
+      devices: safe.devices && typeof safe.devices === 'object' ? safe.devices : {},
+      blockedDevices: safe.blockedDevices && typeof safe.blockedDevices === 'object' ? safe.blockedDevices : {},
+      activityLog: Array.isArray(safe.activityLog) ? safe.activityLog : []
+    }
+  };
+}
+async function pushRemoteConditional(newData, etag){
+  const res = await fetch(DB_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'If-Match':etag || 'null_etag' }, body:JSON.stringify(newData) });
+  if(res.status === 412) return false;
+  if(!res.ok) throw new Error('push failed: '+res.status);
+  return true;
+}
+
+// Use Firebase ETag/If-Match so another phone cannot silently overwrite a newer change.
+async function withLatest(mutator, actionLabel){
+  if(busy) return;
+  busy = true;
+  setSyncStatus(T().syncing);
+  try{
+    let lastError = null;
+    for(let attempt=0; attempt<5; attempt++){
+      const snap = await fetchRemoteWithEtag();
+      const latest = snap.data;
+      mutator(latest);
+      if(actionLabel){
+        if(!latest.activityLog) latest.activityLog = [];
+        latest.activityLog.push({device:getDeviceId(), action:actionLabel, ts:Date.now()});
+        if(latest.activityLog.length > 60) latest.activityLog = latest.activityLog.slice(-60);
+      }
+      const ok = await pushRemoteConditional(latest, snap.etag);
+      if(ok){
+        data = await fetchRemote();
+        dirty = false;
+        setSyncStatus(T().synced);
+        renderAll();
+        return;
+      }
+      lastError = new Error('database changed; retrying');
+    }
+    throw lastError || new Error('sync failed');
+  }catch(e){
+    console.error('Sync failed:', e);
+    dirty = false;
+    setSyncStatus(T().syncError);
+    try{ data = await fetchRemote(); renderAll(); }catch(_e){}
+  }finally{ busy = false; }
+}
+
+async function loadAndRender(){
+  setSyncStatus(T().syncing);
+  try{
+    data = await fetchRemote();
+    setSyncStatus(T().synced);
+  }catch(e){
+    setSyncStatus(T().syncError);
+  }
+  checkBlockedAndRegisterDevice();
+  setupMonthFilters();
+  renderAll();
+}
+
+async function checkBlockedAndRegisterDevice(){
+  const id = getDeviceId();
+  if(data.blockedDevices && data.blockedDevices[id]){
+    document.getElementById('blockScreen').style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('blockScreen').style.display = 'none';
+
+  // IMPORTANT: update only this device's node with PATCH.
+  // Never PUT the entire database here, otherwise a background device update
+  // can overwrite a newly-added/deleted expense or activity log.
+  const now = Date.now();
+  const deviceInfo = data.devices && data.devices[id] ? data.devices[id] : { firstSeen: now };
+  const patch = {
+    firstSeen: deviceInfo.firstSeen || now,
+    lastSeen: now
+  };
+
+  fetch(`https://room-manegement-d9cf1-default-rtdb.firebaseio.com/roomhisab/devices/${encodeURIComponent(id)}.json`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(patch)
+  }).catch(()=>{});
+
+  if(!data.devices) data.devices = {};
+  data.devices[id] = patch;
+
+  if(localStorage.getItem('is-admin') === 'true'){
+    document.getElementById('navAdminBtn').style.display = 'flex';
+  }
+}
+
+function renderAll(){
+  renderMembers();
+  renderRation();
+  renderExpenses();
+  renderBalances();
+}
+
+function applyLanguage(){
+  const t = T();
+  document.documentElement.lang = lang;
+  document.getElementById('brandText').textContent = t.brand;
+  document.getElementById('subText').textContent = t.sub;
+  document.getElementById('navRation').textContent = t.navRation;
+  document.getElementById('navKharcha').textContent = t.navKharcha;
+  document.getElementById('navHisab').textContent = t.navHisab;
+  document.getElementById('rationTitle').textContent = t.rationTitle;
+  document.getElementById('rationInput').placeholder = t.rationPlaceholder;
+  document.getElementById('rationAddBtn').textContent = t.addBtn;
+  document.getElementById('rationHint').textContent = t.rationHint;
+  document.getElementById('monthTotalLabel').textContent = t.monthTotalLabel;
+  document.getElementById('newExpenseTitle').textContent = t.newExpenseTitle;
+  document.getElementById('expAmount').placeholder = t.amountPlaceholder;
+  document.getElementById('expNote').placeholder = t.notePlaceholder;
+  document.getElementById('addExpenseBtn').textContent = t.addExpenseBtn;
+  document.getElementById('recentExpensesTitle').textContent = t.recentExpensesTitle;
+  document.getElementById('membersTitle').textContent = t.membersTitle;
+  document.getElementById('memberInput').placeholder = t.memberPlaceholder;
+  document.getElementById('memberAddBtn').textContent = t.addBtn;
+  document.getElementById('balanceTitle').textContent = t.balanceTitle;
+  document.getElementById('settleTitle').textContent = t.settleTitle;
+  document.getElementById('resetBtn').textContent = t.resetBtn;
+  document.getElementById('splitAmongLabel').textContent = t.splitAmongLabel;
+  document.getElementById('resetMonthBtn').textContent = t.resetMonthBtn;
+  document.getElementById('resetYearBtn').textContent = t.resetYearBtn;
+  document.getElementById('resetCancelBtn').textContent = t.resetCancel;
+  document.getElementById('refreshBtn').textContent = t.refreshBtn;
+  document.querySelectorAll('.lang-switch button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+document.getElementById('langSwitch').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  lang = btn.dataset.lang;
+  localStorage.setItem('lang-pref', lang);
+  applyLanguage();
+  renderAll();
+});
+
+// ---------- TABS ----------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- RATION ----------
+function renderRation(){
+  const t = T();
+  const list = document.getElementById('rationList');
+  if(!data.ration.length){ list.innerHTML = `<div class="empty">${t.rationEmpty}</div>`; return; }
+  list.innerHTML = data.ration.map(item => `
+    <div class="item-row">
+      <span class="item-name">${escapeHtml(item.name)}</span>
+      <button class="pill ${item.status}" data-id="${item.id}" data-action="toggle">
+        ${item.status === 'khatam' ? t.statusKhatam : t.statusAvailable}
+      </button>
+      <button class="del-btn" data-id="${item.id}" data-action="delete-ration">✕</button>
+    </div>
+  `).join('');
+}
+document.getElementById('rationForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const input = document.getElementById('rationInput');
+  const name = input.value.trim();
+  if(!name) return;
+  input.value='';
+  await withLatest(d => d.ration.push({id: uid(), name, status:'khatam'}), 'Added ration: '+name);
+});
+document.getElementById('rationList').addEventListener('click', async e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const id = btn.dataset.id;
+  if(btn.dataset.action === 'toggle'){
+    const itemName = (data.ration.find(r=>r.id===id)||{}).name || id;
+    await withLatest(d => {
+      const item = d.ration.find(r=>r.id===id);
+      if(item) item.status = item.status === 'khatam' ? 'available' : 'khatam';
+    }, 'Toggled ration: '+itemName);
+  } else if(btn.dataset.action === 'delete-ration'){
+    const itemName = (data.ration.find(r=>r.id===id)||{}).name || id;
+    await withLatest(d => { d.ration = d.ration.filter(r=>r.id!==id); }, 'Deleted ration: '+itemName);
+  }
+});
+
+// ---------- MEMBERS ----------
+function renderMembers(){
+  const t = T();
+  const wrap = document.getElementById('memberChips');
+  wrap.innerHTML = data.members.length ? data.members.map(m => `
+    <span class="member-chip">${escapeHtml(m)} <button data-name="${escapeHtml(m)}" data-action="delete-member">✕</button></span>
+  `).join('') : `<div class="empty" style="padding:8px 0;">${t.memberEmpty}</div>`;
+
+  const sel = document.getElementById('expMember');
+  sel.innerHTML = data.members.length
+    ? data.members.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('')
+    : `<option value="">${t.selectMemberPlaceholder}</option>`;
+
+  const splitWrap = document.getElementById('splitAmongChecks');
+  if(splitWrap){
+    const prevChecked = {};
+    splitWrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{ prevChecked[cb.value] = cb.checked; });
+    splitWrap.innerHTML = data.members.map(m => {
+      const checked = (prevChecked[m] === undefined) ? true : prevChecked[m];
+      return `<label style="display:flex; align-items:center; gap:4px; font-size:13px; background:var(--bg); border:1px solid var(--line); padding:4px 9px; border-radius:999px;">
+        <input type="checkbox" value="${escapeHtml(m)}" ${checked?'checked':''} style="margin:0;"> ${escapeHtml(m)}
+      </label>`;
+    }).join('');
+  }
+}
+document.getElementById('memberForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const input = document.getElementById('memberInput');
+  const name = input.value.trim();
+  if(!name) { return; }
+  input.value='';
+  await withLatest(d => { if(!d.members.includes(name)) d.members.push(name); }, 'Added member: '+name);
+});
+document.getElementById('memberChips').addEventListener('click', async e=>{
+  const btn = e.target.closest('button');
+  if(!btn || btn.dataset.action !== 'delete-member') return;
+  const name = btn.dataset.name;
+  await withLatest(d => { d.members = d.members.filter(m=>m!==name); }, 'Removed member: '+name);
+});
+
+function setupMonthFilters(){
+  const existingYears=[
+    ...data.expenses.map(x=>new Date(x.ts).getFullYear()),
+    ...data.rent.map(x=>Number(x.year))
+  ].filter(Boolean);
+  const baseYear=2026;
+  const maxYear=Math.max(new Date().getFullYear()+5, selectedYear, ...existingYears);
+  const years=[];
+  for(let y=baseYear; y<=maxYear; y++) years.push(y);
+
+  ['expenseYear','settleYear'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    el.value=String(selectedYear);
+  });
+  ['expenseMonth','settleMonth'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=monthNames.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    el.value=String(selectedMonth);
+  });
+}
+function bindMonthFilters(){
+  ['expenseYear','settleYear'].forEach(id=>document.getElementById(id)?.addEventListener('change',e=>{selectedYear=Number(e.target.value); syncFilterValues(); renderExpenses(); renderBalances();}));
+  ['expenseMonth','settleMonth'].forEach(id=>document.getElementById(id)?.addEventListener('change',e=>{selectedMonth=Number(e.target.value); syncFilterValues(); renderExpenses(); renderBalances();}));
+}
+function expenseTimestampForSelectedMonth(){
+  // New expenses belong to the month/year currently selected in the filter,
+  // not always to today's real date.
+  const now = new Date();
+  if(selectedYear === now.getFullYear() && selectedMonth === now.getMonth()) return now.getTime();
+  const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  const day = Math.min(now.getDate(), lastDay);
+  return new Date(selectedYear, selectedMonth, day, now.getHours(), now.getMinutes(), now.getSeconds()).getTime();
+}
+function syncFilterValues(){['expenseYear','settleYear'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=String(selectedYear)});['expenseMonth','settleMonth'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=String(selectedMonth)});}
+
+// ---------- EXPENSES ----------
+function renderExpenses(){
+  const t = T();
+  const list = document.getElementById('expenseList');
+  const filtered = data.expenses.filter(ex=>{const d=new Date(ex.ts);return d.getFullYear()===selectedYear&&d.getMonth()===selectedMonth;});
+  if(!filtered.length){ list.innerHTML = `<div class="empty">${t.expenseEmpty}</div>`; document.getElementById('monthTotal').textContent='₹0'; return; }
+  const sorted = [...filtered].sort((a,b)=> b.ts - a.ts);
+  list.innerHTML = sorted.map(ex => {
+    let dateStr;
+    try{ dateStr = new Date(ex.ts).toLocaleDateString(t.locale, {day:'numeric', month:'short'}); }
+    catch(e){ dateStr = new Date(ex.ts).toLocaleDateString('en-IN', {day:'numeric', month:'short'}); }
+    return `
+    <div class="expense-row">
+      <div>
+        <div class="expense-who">${escapeHtml(ex.member)}</div>
+        <div class="expense-what">${escapeHtml(ex.note)} · ${dateStr}</div>
+        ${(Array.isArray(ex.splitAmong) && ex.splitAmong.length && ex.splitAmong.length !== data.members.length) ? `<div style="font-size:11px; color:var(--ink-soft);">Split: ${ex.splitAmong.map(escapeHtml).join(', ')}</div>` : ''}
+      </div>
+      <div>
+        <div class="expense-amt">₹${ex.amount}</div>
+        <button type="button" class="del-btn" data-action="delete-expense" data-expense-id="${escapeHtml(String(ex.id))}" aria-label="Delete expense">✕</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  const monthTotal = filtered.reduce((s,ex)=>s+Number(ex.amount),0);
+  document.getElementById('monthTotal').textContent = '₹' + monthTotal;
+}
+document.getElementById('expenseList').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-action="delete-expense"]');
+  if(!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const expenseId = String(btn.dataset.expenseId || '');
+  if(!expenseId || busy) return;
+  const ex = data.expenses.find(x => String(x.id) === expenseId);
+  if(!ex) return;
+  btn.disabled = true;
+  try{
+    await withLatest(d => { d.expenses = d.expenses.filter(x => String(x.id) !== expenseId); }, `Deleted expense: ₹${ex.amount} (${ex.note}) - ${ex.member}`);
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('expenseForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const member = document.getElementById('expMember').value;
+  const amount = Number(document.getElementById('expAmount').value);
+  const note = document.getElementById('expNote').value.trim();
+  if(!member || !amount || !note) return;
+  let splitAmong = [...document.querySelectorAll('#splitAmongChecks input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!splitAmong.length) splitAmong = [...data.members];
+  document.getElementById('expAmount').value='';
+  document.getElementById('expNote').value='';
+  const expTs = expenseTimestampForSelectedMonth();
+  await withLatest(d => { d.expenses.push({id: uid(), member, amount, note, ts: expTs, splitAmong}); }, `Added expense: ₹${amount} (${note}) - ${member}`);
+});
+
+// ---------- BALANCES / SETTLEMENT ----------
+function renderBalances(){
+  const t = T();
+  const balWrap = document.getElementById('balanceList');
+  const settleWrap = document.getElementById('settleList');
+  if(data.members.length < 2){
+    balWrap.innerHTML = `<div class="empty">${t.balanceEmpty}</div>`;
+    settleWrap.innerHTML = `<div class="empty">—</div>`;
+    return;
+  }
+  const monthExpenses = data.expenses.filter(ex=>{const d=new Date(ex.ts);return d.getFullYear()===selectedYear&&d.getMonth()===selectedMonth;});
+  const rentMonthTotal = data.rent.filter(r=>Number(r.year)===selectedYear&&Number(r.month)===selectedMonth).reduce((s,r)=>s+rentTotal(r),0);
+  const rentSharePerMember = rentMonthTotal / data.members.length;
+
+  const spent = {};    // what each member personally paid out
+  const owedShare = {}; // what each member owes as their fair share
+  data.members.forEach(m=>{ spent[m]=0; owedShare[m]=rentSharePerMember; });
+  // Rent is a shared obligation split equally among all members, regardless of who paid it.
+  // Each expense, though, is split only among the members selected for it (splitAmong) —
+  // so a member who was away and excluded from an expense owes nothing toward it.
+  monthExpenses.forEach(ex=>{
+    if(spent[ex.member] !== undefined) spent[ex.member]+=Number(ex.amount);
+    const participants = (Array.isArray(ex.splitAmong) && ex.splitAmong.length) ? ex.splitAmong : data.members;
+    const share = Number(ex.amount) / participants.length;
+    participants.forEach(p=>{ if(owedShare[p] !== undefined) owedShare[p]+=share; });
+  });
+
+  const balances = data.members.map(m => ({ name:m, balance: Math.round((spent[m]-owedShare[m])*100)/100 }));
+
+  balWrap.innerHTML = balances.map(b => `
+    <div class="balance-row">
+      <span class="bal-name">${escapeHtml(b.name)}</span>
+      <span class="bal-amt ${b.balance>=0?'pos':'neg'}">
+        ₹${Math.abs(b.balance)} ${b.balance>=0 ? t.willGet : t.willGive}
+      </span>
+    </div>
+  `).join('');
+
+  const creditors = balances.filter(b=>b.balance>0.5).map(b=>({...b})).sort((a,b)=>b.balance-a.balance);
+  const debtors = balances.filter(b=>b.balance<-0.5).map(b=>({...b, balance:-b.balance})).sort((a,b)=>b.balance-a.balance);
+  const lines = [];
+  let i=0, j=0;
+  while(i<debtors.length && j<creditors.length){
+    const pay = Math.min(debtors[i].balance, creditors[j].balance);
+    lines.push(`${debtors[i].name} → ${creditors[j].name} : ₹${Math.round(pay)}`);
+    debtors[i].balance -= pay;
+    creditors[j].balance -= pay;
+    if(debtors[i].balance < 0.5) i++;
+    if(creditors[j].balance < 0.5) j++;
+  }
+  settleWrap.innerHTML = lines.length
+    ? lines.map(l=>`<div class="settle-line">${l}</div>`).join('')
+    : `<div class="empty">${t.settleAllClear}</div>`;
+}
+
+// ---------- RESET / REFRESH ----------
+const RESET_PASSWORD = 'Badal@2003';
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('resetPanel');
+  const showing = panel.style.display !== 'none';
+  if(showing){ panel.style.display = 'none'; return; }
+  openPasswordModal(RESET_PASSWORD, ()=>{
+    panel.style.display = 'block';
+    const years=[]; for(let y=2026;y<=new Date().getFullYear()+5;y++) years.push(y);
+    document.getElementById('resetYear').innerHTML = years.map(y=>`<option>${y}</option>`).join('');
+    document.getElementById('resetMonth').innerHTML = monthNames.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    const now = new Date();
+    document.getElementById('resetYear').value = now.getFullYear();
+    document.getElementById('resetMonth').value = now.getMonth();
+  });
+});
+document.getElementById('resetCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('resetPanel').style.display = 'none';
+});
+document.getElementById('resetMonthBtn').addEventListener('click', async ()=>{
+  if(!confirm(T().resetMonthConfirm)) return;
+  const y = Number(document.getElementById('resetYear').value);
+  const m = Number(document.getElementById('resetMonth').value);
+  await withLatest(d => {
+    d.expenses = d.expenses.filter(x => { const dt = new Date(x.ts); return !(dt.getFullYear()===y && dt.getMonth()===m); });
+    d.rent = d.rent.filter(x => !(x.year===y && x.month===m));
+  }, `RESET month: ${monthNames[m]} ${y}`);
+  document.getElementById('resetPanel').style.display = 'none';
+});
+document.getElementById('resetYearBtn').addEventListener('click', async ()=>{
+  if(!confirm(T().resetYearConfirm)) return;
+  const y = Number(document.getElementById('resetYear').value);
+  await withLatest(d => {
+    d.expenses = d.expenses.filter(x => new Date(x.ts).getFullYear() !== y);
+    d.rent = d.rent.filter(x => x.year !== y);
+  }, `RESET entire year: ${y}`);
+  document.getElementById('resetPanel').style.display = 'none';
+});
+document.getElementById('refreshBtn').addEventListener('click', loadAndRender);
+document.getElementById('headerRefreshBtn').addEventListener('click', loadAndRender);
+
+// Auto-refresh from the shared bin periodically, and when the tab regains focus
+// Automatic sync/refresh disabled. Use Save / Sync manually.
+// No sync on tab focus; changes are saved only with Save / Sync.
+
+document.getElementById('saveAllBtn').addEventListener('click', async ()=>{
+  if(busy || !dirty) return;
+  busy = true;
+  setSyncStatus(T().syncing);
+  try{
+    await pushRemote(data);
+    dirty = false;
+    setSyncStatus(T().synced);
+  }catch(e){
+    setSyncStatus(T().syncError);
+  }finally{
+    busy = false;
+    renderAll();
+  }
+});
+
+
+// ---------- RENT / MAIN DATA ----------
+const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fillDateSelects(){
+  const years=[]; for(let y=2026;y<=new Date().getFullYear()+5;y++) years.push(y);
+  ['rentYear','mainYear'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.options.length) el.innerHTML=years.map(y=>`<option>${y}</option>`).join('');});
+  ['rentMonth','mainMonth'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.options.length) el.innerHTML=monthNames.map((m,i)=>`<option value="${i}">${m}</option>`).join('');});
+  const now=new Date(); ['rentYear','mainYear'].forEach(id=>document.getElementById(id).value=now.getFullYear()); ['rentMonth','mainMonth'].forEach(id=>document.getElementById(id).value=now.getMonth());
+}
+function rentTotal(r){return Number(r.roomRent||0)+Number(r.electricBill||0)+(r.extra||[]).reduce((s,x)=>s+Number(x.amount||0),0)}
+function renderRent(){
+ const list=document.getElementById('rentList'); if(!list)return;
+ if(!data.rent.length){list.innerHTML='<div class="empty">No rent records yet</div>';return;}
+ list.innerHTML=[...data.rent].sort((a,b)=>b.year-a.year||b.month-a.month).map(r=>`<div class="expense-row"><div><div class="expense-who">${monthNames[r.month]} ${r.year}</div><div class="expense-what">Room: ₹${r.roomRent} · Electricity: ₹${r.electricBill}<br>${(r.extra||[]).map(x=>escapeHtml(x.name)+': ₹'+x.amount).join(' · ')}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="expense-amt">₹${rentTotal(r)}</div><button class="del-btn" data-rent-id="${r.id}">✕</button></div></div>`).join('');
+}
+function renderAllMonthsHistory(){
+ const wrap=document.getElementById('allMonthsHistory'); if(!wrap)return;
+ const keys=new Set();
+ data.expenses.forEach(x=>{const d=new Date(x.ts); if(!isNaN(d))keys.add(d.getFullYear()+'-'+d.getMonth());});
+ data.rent.forEach(x=>keys.add(x.year+'-'+x.month));
+ if(!keys.size){wrap.innerHTML='<div class="empty">No monthly history yet</div>';return;}
+ const rows=[...keys].map(k=>{const [y,m]=k.split('-').map(Number);const ex=data.expenses.filter(x=>{const d=new Date(x.ts);return d.getFullYear()===y&&d.getMonth()===m});const rr=data.rent.filter(x=>x.year===y&&x.month===m);const e=ex.reduce((a,x)=>a+Number(x.amount),0),r=rr.reduce((a,x)=>a+rentTotal(x),0);return {y,m,e,r,total:e+r};}).sort((a,b)=>b.y-a.y||b.m-a.m);
+ wrap.innerHTML=rows.map(x=>`<div class="item-row"><div><div class="item-name">${monthNames[x.m]} ${x.y}</div><div class="expense-what">Expenses: ₹${x.e} · Rent: ₹${x.r}</div></div><div class="expense-amt">₹${x.total}</div></div>`).join('')+`<div class="total-banner" style="margin-top:10px;margin-bottom:0;"><div><div class="label">All months combined total</div><div class="val">₹${rows.reduce((a,x)=>a+x.total,0)}</div></div></div>`;
+}
+function renderMainData(){
+ const y=Number(document.getElementById('mainYear').value), m=Number(document.getElementById('mainMonth').value); const ex=data.expenses.filter(x=>{const d=new Date(x.ts);return d.getFullYear()===y&&d.getMonth()===m}); const rr=data.rent.filter(x=>x.year===y&&x.month===m); const ration=data.ration;
+ const totalExp=ex.reduce((s,x)=>s+Number(x.amount),0), totalRent=rr.reduce((s,x)=>s+rentTotal(x),0);
+ document.getElementById('mainDataView').innerHTML=`<div class="item-row"><b>Ration items</b><span>${ration.length}</span></div><div class="item-row"><b>Expenses</b><span>₹${totalExp}</span></div><div class="item-row"><b>Rent & bills</b><span>₹${totalRent}</span></div><div class="item-row"><b>Grand total</b><span>₹${totalExp+totalRent}</span></div><div style="margin-top:10px;font-size:13px;color:var(--ink-soft)">${ex.map(x=>escapeHtml(x.member)+' — ₹'+x.amount+' ('+escapeHtml(x.note)+')').join('<br>')||'No expenses for this month.'}</div>`;
+}
+const oldRenderAll=renderAll; renderAll=function(){oldRenderAll();renderRent();renderMainData();renderAllMonthsHistory();};
+fillDateSelects();
+document.getElementById('rentForm').addEventListener('submit',e=>{e.preventDefault();const extra=[...document.querySelectorAll('.extra-charge')].map(row=>({name:row.querySelector('.extra-name').value.trim(),amount:Number(row.querySelector('.extra-amount').value||0)})).filter(x=>x.name&&x.amount);const y=Number(rentYear.value),m=Number(rentMonth.value);withLatest(d=>d.rent.push({id:uid(),year:y,month:m,roomRent:Number(roomRent.value||0),electricBill:Number(electricBill.value||0),extra}), `Added rent: ${monthNames[m]} ${y}`);e.target.reset();fillDateSelects();});
+document.getElementById('addExtraBtn').addEventListener('click',()=>{const row=document.createElement('div');row.className='extra-charge';row.style='display:flex;gap:8px;margin-bottom:8px;';row.innerHTML='<input class="extra-name" placeholder="Charge name" required><input class="extra-amount" type="number" min="0" placeholder="Amount ₹" required>';document.getElementById('extraCharges').appendChild(row);});
+document.getElementById('rentList').addEventListener('click',e=>{const b=e.target.closest('[data-rent-id]');if(b){const r=data.rent.find(x=>x.id===b.dataset.rentId);const label=r?`Deleted rent: ${monthNames[r.month]} ${r.year}`:'Deleted rent';withLatest(d=>{d.rent=d.rent.filter(x=>x.id!==b.dataset.rentId);}, label);}});
+['mainYear','mainMonth'].forEach(id=>document.getElementById(id).addEventListener('change',renderMainData));
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function updateOfflineScreen(){
+  const screen = document.getElementById('offlineScreen');
+  if(!screen) return;
+  if(navigator.onLine === false){
+    screen.style.display = 'flex';
+  } else {
+    screen.style.display = 'none';
+  }
+}
+window.addEventListener('offline', updateOfflineScreen);
+window.addEventListener('online', ()=>{
+  updateOfflineScreen();
+  loadAndRender();
+});
+document.getElementById('offlineRetryBtn').addEventListener('click', ()=>{
+  updateOfflineScreen();
+  loadAndRender();
+});
+updateOfflineScreen();
+
+applyLanguage();
+setupMonthFilters();
+bindMonthFilters();
+loadAndRender();
+
+// Alternate two background photos inside the Ration card every 5 seconds
+const rationCardImages = ['chef1.jpg','chef2.jpg'];
+let rationCardImgIndex = 0;
+function setRationCardBg(){
+  const el = document.getElementById('rationCard');
+  if(el) el.style.backgroundImage = `url('${rationCardImages[rationCardImgIndex]}')`;
+}
+setRationCardBg();
+setInterval(()=>{
+  rationCardImgIndex = (rationCardImgIndex + 1) % rationCardImages.length;
+  setRationCardBg();
+}, 5000);
+
+// ---------- ADMIN: secret unlock + device block/unblock ----------
+const ADMIN_PASSWORD = 'Badal@2003';
+let passwordModalCallback = null;
+function openPasswordModal(expectedPassword, onSuccess){
+  document.getElementById('adminPasswordMsg').textContent = '';
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminPasswordModal').style.display = 'flex';
+  passwordModalCallback = { expected: expectedPassword, onSuccess: onSuccess };
+}
+document.getElementById('adminPasswordCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('adminPasswordModal').style.display = 'none';
+  passwordModalCallback = null;
+});
+document.getElementById('adminPasswordOkBtn').addEventListener('click', ()=>{
+  const entered = document.getElementById('adminPasswordInput').value;
+  if(!passwordModalCallback) return;
+  if(entered === passwordModalCallback.expected){
+    document.getElementById('adminPasswordModal').style.display = 'none';
+    const cb = passwordModalCallback.onSuccess;
+    passwordModalCallback = null;
+    cb();
+  } else {
+    document.getElementById('adminPasswordMsg').textContent = 'Wrong password, try again.';
+  }
+});
+
+let textModalCallback = null;
+function openTextModal(title, currentValue, onSave){
+  document.getElementById('textModalTitle').textContent = title;
+  document.getElementById('textModalInput').value = currentValue || '';
+  document.getElementById('textModal').style.display = 'flex';
+  textModalCallback = onSave;
+  setTimeout(()=>{ document.getElementById('textModalInput').focus(); }, 50);
+}
+document.getElementById('textModalCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('textModal').style.display = 'none';
+  textModalCallback = null;
+});
+document.getElementById('textModalOkBtn').addEventListener('click', ()=>{
+  const val = document.getElementById('textModalInput').value.trim();
+  const cb = textModalCallback;
+  document.getElementById('textModal').style.display = 'none';
+  textModalCallback = null;
+  if(cb) cb(val);
+});
+
+let brandTapCount = 0;
+let brandTapTimer = null;
+document.getElementById('brandTapZone').addEventListener('click', ()=>{
+  brandTapCount++;
+  clearTimeout(brandTapTimer);
+  brandTapTimer = setTimeout(()=>{ brandTapCount = 0; }, 2000);
+  if(brandTapCount >= 5){
+    brandTapCount = 0;
+    openPasswordModal(ADMIN_PASSWORD, ()=>{
+      localStorage.setItem('is-admin', 'true');
+      document.getElementById('navAdminBtn').style.display = 'flex';
+    });
+  }
+});
+
+function timeAgo(ts){
+  if(!ts) return 'never';
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff/60000);
+  if(min < 1) return 'just now';
+  if(min < 60) return min+'m ago';
+  const hr = Math.floor(min/60);
+  if(hr < 24) return hr+'h ago';
+  const day = Math.floor(hr/24);
+  return day+'d ago';
+}
+const INACTIVE_DAYS = 30;
+let adminSearchQuery = '';
+let adminShowAllActivity = false;
+
+function statChip(label, value, color){
+  return `<div style="flex:1; min-width:80px; background:${color}18; border:1px solid ${color}40; border-radius:12px; padding:8px 10px;">
+    <div style="font-size:11px; color:${color}; font-weight:700;">${label}</div>
+    <div style="font-size:18px; font-weight:700; color:var(--ink);">${value}</div>
+  </div>`;
+}
+
+function renderAdminList(){
+  const el = document.getElementById('adminDeviceList');
+  if(!el) return;
+  const myId = getDeviceId();
+  const devices = data.devices || {};
+  const blocked = data.blockedDevices || {};
+  const now = Date.now();
+  let ids = Object.keys(devices);
+
+  // Stats
+  const allowedCount = ids.filter(id=>!blocked[id]).length;
+  const blockedCount = ids.filter(id=>!!blocked[id]).length;
+  const inactiveCount = ids.filter(id=>{
+    const last = devices[id].lastSeen || devices[id].firstSeen || 0;
+    return (now - last) > INACTIVE_DAYS*24*60*60*1000;
+  }).length;
+  const statsEl = document.getElementById('adminStats');
+  if(statsEl){
+    statsEl.innerHTML =
+      statChip('Allowed', allowedCount, '#4F7942') +
+      statChip('Blocked', blockedCount, '#A63A2D') +
+      statChip('Total', ids.length, '#D98E04') +
+      statChip('Inactive 30d+', inactiveCount, '#6B5D4C');
+  }
+
+  // Device limit field (only fill once so typing isn't disrupted)
+  const limitInput = document.getElementById('adminDeviceLimit');
+  if(limitInput && document.activeElement !== limitInput){
+    limitInput.value = (data.deviceLimit === undefined || data.deviceLimit === null) ? '' : data.deviceLimit;
+  }
+
+  // Search filter
+  if(adminSearchQuery){
+    const q = adminSearchQuery.toLowerCase();
+    ids = ids.filter(id => id.toLowerCase().includes(q) || ((devices[id].name||'').toLowerCase().includes(q)));
+  }
+  ids.sort((a,b)=> (devices[b].lastSeen||devices[b].firstSeen||0) - (devices[a].lastSeen||devices[a].firstSeen||0));
+
+  let html = '';
+  if(!ids.length){
+    html = '<div class="empty">No devices found</div>';
+  } else {
+    html = ids.map(id => {
+      const isBlocked = !!blocked[id];
+      const dev = devices[id];
+      const displayName = dev.name ? dev.name : (id === myId ? 'This device' : 'Unnamed device');
+      const last = dev.lastSeen || dev.firstSeen;
+      return `<div class="item-row" style="flex-wrap:wrap;">
+        <div style="flex:1; min-width:180px;">
+          <div class="item-name" style="font-size:13.5px;">${escapeHtml(displayName)}${id===myId?' <span style="color:var(--ink-soft); font-weight:400; font-size:11px;">(this device)</span>':''}</div>
+          <div style="font-size:11px; color:var(--ink-soft); word-break:break-all;">${escapeHtml(id)}</div>
+          <div style="font-size:11.5px; color:var(--ink-soft);">Last active: ${timeAgo(last)} · First seen: ${dev.firstSeen ? new Date(dev.firstSeen).toLocaleDateString() : '—'}</div>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0; flex-wrap:wrap;">
+          <button type="button" class="pill ${isBlocked?'khatam':'available'}" data-device-id="${escapeHtml(id)}" data-action="toggle-block">
+            ${isBlocked ? '⛔ Blocked' : '✅ Allowed'}
+          </button>
+          <button type="button" data-device-id="${escapeHtml(id)}" data-action="rename-device" aria-label="Rename device" title="Rename device" style="min-width:32px; width:32px; height:32px; padding:0; border-radius:9px; background:#e7effa; color:#2b5da8; border:1px solid #c7d9f3; font-size:14px; line-height:1;">✏️</button>
+          <button type="button" data-device-id="${escapeHtml(id)}" data-action="remove-device" aria-label="Remove device" title="Remove device" style="min-width:32px; width:32px; height:32px; padding:0; border-radius:9px; background:#fde7e5; color:#b33a32; border:1px solid #f3c4c0; font-size:15px; line-height:1;">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  el.innerHTML = html;
+
+  const logEl = document.getElementById('adminActivityLog');
+  if(logEl){
+    const all = [...(data.activityLog||[])].sort((a,b)=>b.ts-a.ts);
+    const log = adminShowAllActivity ? all : all.slice(0,8);
+    logEl.innerHTML = log.length ? log.map(entry => `
+      <div class="expense-row">
+        <div>
+          <div class="expense-who" style="font-size:13px;">${escapeHtml(entry.action)}</div>
+          <div class="expense-what" style="font-size:11px; word-break:break-all;">${entry.device===myId?'This device':escapeHtml((devices[entry.device]&&devices[entry.device].name)||entry.device)} · ${timeAgo(entry.ts)}</div>
+        </div>
+      </div>
+    `).join('') : '<div class="empty">No activity yet</div>';
+    const viewAllBtn = document.getElementById('adminActivityViewAllBtn');
+    if(viewAllBtn) viewAllBtn.textContent = adminShowAllActivity ? 'Show less' : 'View all';
+  }
+}
+
+document.getElementById('adminSearch').addEventListener('input', e=>{
+  adminSearchQuery = e.target.value.trim();
+  renderAdminList();
+});
+document.getElementById('adminActivityViewAllBtn').addEventListener('click', ()=>{
+  adminShowAllActivity = !adminShowAllActivity;
+  renderAdminList();
+});
+document.getElementById('adminDeviceLimitSave').addEventListener('click', async ()=>{
+  const val = document.getElementById('adminDeviceLimit').value;
+  const num = val === '' ? null : Math.max(0, Math.floor(Number(val)));
+  await withLatest(d => { d.deviceLimit = num; }, 'Set device limit: '+(num===null?'none':num));
+});
+
+document.getElementById('adminDeviceList').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const id = String(btn.dataset.deviceId || '');
+  if(!id) return;
+
+  if(btn.dataset.action === 'toggle-block'){
+    const willBlock = !(data.blockedDevices && data.blockedDevices[id]);
+    await withLatest(d => {
+      if(!d.blockedDevices) d.blockedDevices = {};
+      if(d.blockedDevices[id]) delete d.blockedDevices[id];
+      else d.blockedDevices[id] = true;
+    }, (willBlock?'Blocked device: ':'Unblocked device: ')+id);
+    return;
+  }
+
+  if(btn.dataset.action === 'rename-device'){
+    const current = (data.devices[id] && data.devices[id].name) || '';
+    openTextModal('Device name', current, async (newName)=>{
+      await withLatest(d => { if(d.devices && d.devices[id]) d.devices[id].name = newName; }, 'Renamed device: '+id+' → '+newName);
+    });
+    return;
+  }
+
+  if(btn.dataset.action === 'remove-device'){
+    if(busy) return;
+    const device = data.devices && data.devices[id];
+    if(!device) return;
+
+    busy = true;
+    btn.disabled = true;
+    setSyncStatus(T().syncing);
+    try{
+      const deviceUrl = DB_URL.replace(/\.json$/, '') + '/devices/' + encodeURIComponent(id) + '.json';
+      const blockedUrl = DB_URL.replace(/\.json$/, '') + '/blockedDevices/' + encodeURIComponent(id) + '.json';
+
+      const r1 = await fetch(deviceUrl, { method:'DELETE', cache:'no-store' });
+      if(!r1.ok) throw new Error('Device delete failed (HTTP '+r1.status+')');
+
+      const r2 = await fetch(blockedUrl, { method:'DELETE', cache:'no-store' });
+      if(!r2.ok) throw new Error('Blocked-device cleanup failed (HTTP '+r2.status+')');
+
+      const latest = await fetchRemote();
+      data = latest;
+      dirty = false;
+      setSyncStatus(T().synced);
+      renderAll();
+    }catch(err){
+      console.error('Device remove failed:', err);
+      setSyncStatus('⚠️ Device remove failed — try again');
+      try{ data = await fetchRemote(); renderAll(); }catch(_){ }
+    }finally{
+      busy = false;
+      btn.disabled = false;
+    }
+    return;
+  }
+});
+const oldRenderAll2 = renderAll;
+renderAll = function(){ oldRenderAll2(); renderAdminList(); };
+renderAdminList();
+</script>
+</body>
+</html>
