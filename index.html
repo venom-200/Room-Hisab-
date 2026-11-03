@@ -139,8 +139,6 @@
     @keyframes pop { from { transform: scale(.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }#app .animate-pop{ animation: pop .25s ease-out; }#app .safe-bottom{ padding-bottom: env(safe-area-inset-bottom); }
   
 </style>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-180.png">
 </head>
 <body>
 <div id="site">
@@ -2062,9 +2060,7 @@ async function installApp() {
 }
 
 function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('SW not registered', e));
-  }
+  /* single-file build: no service worker */
 }
 
 </script>
